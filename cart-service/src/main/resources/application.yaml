@@ -1,0 +1,12 @@
+server:
+  port: 8083
+hm:
+  db:
+    database: hm-cart
+  swagger:
+    package: com.hmall.cart.controller
+    title: 购物车服务接口文档
+
+
+# 开启OKHttp功能
+# keytool -genkeypair -alias hmall -keyalg RSA -keypass hmall123 -keystore hmall.jks -storepass hmall123
