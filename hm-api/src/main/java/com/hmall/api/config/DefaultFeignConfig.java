@@ -8,6 +8,7 @@ package com.hmall.api.config;
  * @Description:
  */
 
+import com.hmall.api.fallback.ItemClientFallback;
 import com.hmall.common.utils.UserContext;
 import feign.Logger;
 import feign.RequestInterceptor;
@@ -31,6 +32,10 @@ public class DefaultFeignConfig {
                 }
             }
         };
+    }
+    @Bean
+    public ItemClientFallback itemClientFallback(){
+        return new ItemClientFallback();
     }
 
 }
