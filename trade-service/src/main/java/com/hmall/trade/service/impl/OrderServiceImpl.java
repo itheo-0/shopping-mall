@@ -15,6 +15,9 @@ import com.hmall.trade.service.IOrderDetailService;
 import com.hmall.trade.service.IOrderService;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,12 +37,14 @@ import java.util.stream.Collectors;
  * @since 2023-05-05
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements IOrderService {
 
     private final ItemClient itemClient;
     private final IOrderDetailService detailService;
     private final CartClient cartClient;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @GlobalTransactional
@@ -75,7 +80,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         detailService.saveBatch(details);
 
         // 3.清理购物车商品
-        cartClient.deleteCartItemByIds(itemIds);
+//        cartClient.deleteCartItemByIds(itemIds);
+        try {
+            rabbitTemplate.convertAndSend("trade.topic","order.create",itemIds);
+        } catch (Exception e) {
+            log.error("订单生成成功的消息发送失败，支付单id：{}", order.getId(),e);
+        }
 
         // 4.扣减库存
         try {
